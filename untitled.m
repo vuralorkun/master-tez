@@ -26,8 +26,10 @@ kalmanFilter = adaptiveKalmanFilter(preCentroids,postCentroids,predictedCentroid
 % end                       
 while 1
     frame = snapshot(cam);
-    [bboxes,scores,postCentroids]=detectHuman(detector,frame);   
-   
+    [bboxes,scores,postCentroids]=detectHuman(detector,frame);  
+    preCentroids=deleteExtraCentroids(preCentroids,postCentroids);
+        
+        
     %predictedCentroids = predict(kalmanFilter);          
     if isempty(bboxes)
         postCentroids = [];
@@ -39,18 +41,29 @@ while 1
 %                   predictedCentroids = predict(kalmanFilter);
                   if isempty(preCentroids)
                   else    
-                     preCentroids  
-                    kalmanFilter = adaptiveKalmanFilter(preCentroids,postCentroids,predictedCentroids,count);
-                    predictedCentroids=predict(kalmanFilter)
+                    preCentroids;  
+                    predictedCentroids = [0,0];
+                    
+                    for i=1:length(preCentroids(:,1))
+                        kalmanFilter = adaptiveKalmanFilter(preCentroids(i,:),postCentroids(i,:),predictedCentroids,count);
+                        predictedCentroids(i,:)=predict(kalmanFilter);
+                    end
+                    predictedCentroids;
+                    bboxes;
                     bboxes=reconstructBbox(bboxes,predictedCentroids);
+                    count = count + 1;
                   end  
-                  frame = insertObjectAnnotation(frame,'rectangle',bboxes,scores);
+                
+%                   for j=1:length(bboxes(:,1))
+%                     if ()  
+                    frame = insertObjectAnnotation(frame,'rectangle',bboxes,scores);
                   
 %                 end
     end
     step(videoPlayer,frame);
     preCentroids=postCentroids;
-    count = count + 1;
+    
+    
 end   
  
  
