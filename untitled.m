@@ -11,7 +11,9 @@ predictedCentroids = [0,0];
 prevP = [2, 1];
 prevQ = [5, 5];
 prevR = 100;
-kalmanFilter = adaptiveKalmanFilter(preCentroids,postCentroids,predictedCentroids,count); 
+kalmanFilter = adaptiveKalmanFilter(preCentroids,postCentroids,count); 
+actArray = zeros(50,2);
+estArray = zeros(50,2);
 % frame = snapshot(cam);
 %     [bboxes,scores] = detect(detector,frame,'Threshold',0.5);
 %     [bboxes, scores] = selectStrongestBbox(bboxes, scores, ...
@@ -24,7 +26,7 @@ kalmanFilter = adaptiveKalmanFilter(preCentroids,postCentroids,predictedCentroid
 %     predictedCentroids = predict(kalmanFilter); 
 %     frame = insertObjectAnnotation(frame,'rectangle',bboxes,scores);
 % end                       
-while 1
+while count <50
     frame = snapshot(cam);
     [bboxes,scores,postCentroids]=detectHuman(detector,frame);  
     preCentroids=deleteExtraCentroids(preCentroids,postCentroids);
@@ -41,16 +43,19 @@ while 1
 %                   predictedCentroids = predict(kalmanFilter);
                   if isempty(preCentroids)
                   else    
-                    preCentroids;  
+                    postCentroids;
                     predictedCentroids = [0,0];
                     
-                    for i=1:length(preCentroids(:,1))
-                        kalmanFilter = adaptiveKalmanFilter(preCentroids(i,:),postCentroids(i,:),predictedCentroids,count);
-                        predictedCentroids(i,:)=predict(kalmanFilter);
+                    for i=1:length(postCentroids(:,1))
+                        kalmanFilter = adaptiveKalmanFilter(predictedCentroids(i,:),postCentroids(i,:),2);
+                        predict(kalmanFilter);
+                        predictedCentroids(i,:)=correct(kalmanFilter,preCentroids(i,:));
                     end
                     predictedCentroids;
                     bboxes;
                     bboxes=reconstructBbox(bboxes,predictedCentroids);
+                    actArray(count,:)=postCentroids;
+                    estArray(count,:)=predictedCentroids;
                     count = count + 1;
                   end  
                 
@@ -65,5 +70,9 @@ while 1
     
     
 end   
- 
+
+plot(actArray(1),actArray(2));
+hold on
+plot(estArray(1),estArray(2));
+plot()
  
