@@ -1,6 +1,4 @@
 function [newCentroids] = deleteExtraCentroids(preCentroids,postCentroids)
-%DELETEEXTRACENTROIDS Summary of this function goes here
-%   Detailed explanation goes here
     if isempty(preCentroids)
         newCentroids=preCentroids;
     else if(length(preCentroids(:,1))-length(postCentroids(:,1))>0)  
